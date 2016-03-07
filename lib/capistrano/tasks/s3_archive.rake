@@ -1,7 +1,7 @@
 namespace :s3_archive do
 
   def strategy
-    @strategy ||= Capistrano::S3Archive::SCM.new(self, fetch(:s3_archive_strategy, Capistrano::S3Archive::SCM::RsyncStrategy))
+    @strategy ||= Capistrano::S3Archive::SCM.new(self, fetch(:s3_archive_strategy, Capistrano::S3Archive::SCM::SCPStrategy))
   end
 
   desc 'Check that the S3 buckets are reachable'
@@ -14,7 +14,7 @@ namespace :s3_archive do
   desc 'Extruct and stage the S3 archive in a stage directory'
   task :stage do
     run_locally do
-      
+
       # No need to deploy to the remote node if it already has the same
       # revision as it's current.
       if strategy.current_revision == fetch(:previous_revision)
