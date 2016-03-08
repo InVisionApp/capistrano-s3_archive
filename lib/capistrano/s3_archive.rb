@@ -8,7 +8,6 @@ require 'capistrano/scm'
 set_if_empty :scp_options, []
 set_if_empty :rsync_options, ['-az --delete']
 set_if_empty :rsync_copy, "rsync --archive --acls --xattrs"
-#set_if_empty :rsync_cache, "shared/deploy"
 set_if_empty :rsync_cache, "shared/"
 set_if_empty :local_cache, "tmp/deploy"
 set_if_empty :archive_file, "archive.tgz"
@@ -119,30 +118,18 @@ module Capistrano
         end
 
         def release(server = context.host)
-          unless context.class == SSHKit::Backend::Local
-            user = server.user + '@' unless server.user.nil?
-            key  = ssh_key_for(server)
-            ssh_port_option = server.port.nil? ? '' : "-P #{server.port}"
-          end
-          scp = ['scp']
-          scp.concat fetch(:scp_options)
-          scp << "-i #{key} #{ssh_port_option}"
-          scp << "#{fetch(:archive_file)}"
-          puts "Archive file is: #{fetch(:archive_file)}"
-          puts "rsync_cache is: #{rsync_cache}"
-          puts "release_path is: #{release_path}"
-          scp << "#{user}#{server.hostname}:#{File.join(rsync_cache, File.basename(archive_object_key))}"
-
-          release_lock do
-            run_locally do
-              execute *scp
-            end
-          end
 
           unless fetch(:rsync_cache).nil?
             cache = rsync_cache
             tar_file = File.join(cache, File.basename(archive_object_key))
+            prefix = File.join(object_prefix, File.basename(archive_object_key))
+            # This command allows the remote node to download the archive themseleves without having to download extrat software
+            # It currently depends on the embedded chef ruby to have the aws-sdk installed. If that ever changes, THIS WILL BREAK!
+            download_archive = "/opt/chef/embedded/bin/ruby -e 'require \"aws-sdk\";s3 = Aws::S3::Client.new(region: \"us-east-1\");s3.get_object(response_target: \"#{tar_file}\",bucket: \"#{bucket}\",key: \"#{prefix}\")'"
+
             on [server] do
+
+              execute download_archive
 
               case fetch(:archive_file)
               when /\.tar\.gz\Z|\.tar\.bz2\Z|\.tgz\Z/
@@ -152,12 +139,6 @@ module Capistrano
 
               del_tar = "rm #{tar_file}"
               execute del_tar
-
-              link_option = if fetch(:hardlink) && test("[ `readlink #{current_path}` != #{release_path} ]")
-                              "--link-dest `readlink #{current_path}`"
-                            end
-              copy = %(#{fetch(:rsync_copy)} #{link_option} "#{cache}/" "#{release_path}/")
-              #execute copy
             end
           end
         end
