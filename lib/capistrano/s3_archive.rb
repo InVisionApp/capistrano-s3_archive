@@ -129,7 +129,7 @@ module Capistrano
 
             on [server] do
 
-              execute *download_archive
+              execute download_archive
 
               case fetch(:archive_file)
               when /\.tar\.gz\Z|\.tar\.bz2\Z|\.tgz\Z/
