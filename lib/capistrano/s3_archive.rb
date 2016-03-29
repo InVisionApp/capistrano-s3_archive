@@ -67,7 +67,7 @@ module Capistrano
 
       ### Default strategy
       private
-      module SCPStrategy # Use scp to copy archive over to remote machine and extract it there
+      module HostDownloadStrategy # The host will download the artifact from S3.
         class MissingSSHKyesError < StandardError; end
         class ResourceBusyError < StandardError; end
 
@@ -87,16 +87,12 @@ module Capistrano
             fail "#{tmp_file} is found. Another process is running?" if File.exist?(tmp_file)
             if not File.exist?(fetch(:archive_file))
               mkdir_p(File.dirname(fetch(:archive_file)))
-              File.open(tmp_file, 'w') do |f|
-                get_object(f)
-              end
-              move(tmp_file, fetch(:archive_file))
             else
               context.info "#{fetch(:archive_file)} is found."
             end
 
             release_lock(true) do
-              puts "in relase lock"
+              context.info "Releasing stage lock"
             end
           end
         end
