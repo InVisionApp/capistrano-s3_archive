@@ -1,7 +1,7 @@
 namespace :s3_archive do
 
   def strategy
-    @strategy ||= Capistrano::S3Archive::SCM.new(self, fetch(:s3_archive_strategy, Capistrano::S3Archive::SCM::SCPStrategy))
+    @strategy ||= Capistrano::S3Archive::SCM.new(self, fetch(:s3_archive_strategy, Capistrano::S3Archive::SCM::HostDownloadStrategy))
   end
 
   desc 'Check that the S3 buckets are reachable'
