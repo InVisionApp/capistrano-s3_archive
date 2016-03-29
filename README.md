@@ -1,5 +1,7 @@
 # Capistrano::S3Archive
 
+### Caution: This repo uses code that is specific to a particular workflow. It's not useful outside of this workflow. Strongly suggest you use the upstream plugin: https://github.com/komazarari/capistrano-s3_archive
+
 Capistrano::S3Archive is an extention of [Capistrano](http://www.capistranorb.com/) which enables to `set :scm, :s3_archive`.
 
 This behaves like the [capistrano-rsync](https://github.com/moll/capistrano-rsync) except downloading sources from S3 instead of GIT by default.
