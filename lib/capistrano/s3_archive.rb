@@ -57,7 +57,11 @@ module Capistrano
       end
 
       def latest_object_key
-        list_objects.sort(&fetch(:sort_proc)).first.key
+        if fetch(:force_object_key)
+          fetch(:force_object_key)
+        else
+          list_objects.sort(&fetch(:sort_proc)).first.key
+        end
       end
 
       def parse_s3_uri(uri)
