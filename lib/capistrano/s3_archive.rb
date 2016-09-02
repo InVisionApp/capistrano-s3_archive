@@ -12,7 +12,7 @@ set_if_empty :rsync_cache, "shared/"
 set_if_empty :local_cache, "tmp/deploy"
 set_if_empty :archive_file, "archive.tgz"
 set_if_empty :s3_archive, "tmp/archives"
-set_if_empty :sort_proc, ->(a,b) { b.key <=> a.key }
+set_if_empty :sort_proc, ->(a,b) { b.last_modified <=> a.last_modified }
 
 module Capistrano
   module S3Archive
